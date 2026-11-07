@@ -29,7 +29,6 @@ export default defineType({
       title: 'Cloth Photo',
       type: 'image',
       options: {hotspot: true},
-      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'requestDate',

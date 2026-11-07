@@ -40,7 +40,7 @@ export function OrderForm({ contacts, pendingHours }: { contacts: Contact[]; pen
 
     <div className="form-section"><div className="form-section-title"><span>02</span><div><h2>What are we stitching?</h2><p>Add the piece and a little inspiration.</p></div></div>
       <div className="field-block"><label htmlFor="title">Order name <i>*</i></label><input id="title" name="title" required placeholder="e.g. Lavender silk kurta" /></div>
-      <div className="field-block"><label>Cloth photo <i>*</i></label><ClothPhotoPicker /></div>
+      <div className="field-block"><label>Cloth photo <span className="optional">Optional</span></label><ClothPhotoPicker /></div>
       <div className="field-block"><label htmlFor="comments">A few extra notes <span className="optional">Optional</span></label><textarea id="comments" name="comments" rows={3} placeholder="Measurements, style notes, fabric details…" /></div>
     </div>
 

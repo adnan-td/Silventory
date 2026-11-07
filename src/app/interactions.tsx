@@ -153,25 +153,33 @@ export function ContactPicker({ contacts, name = "contactId", initialContactId =
   </div>;
 }
 
-export function ClothPhotoPicker({ required = true, currentPhotoName }: { required?: boolean; currentPhotoName?: string }) {
+export function ClothPhotoPicker({ currentPhotoName }: { currentPhotoName?: string }) {
   const [fileName, setFileName] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   function openPicker(useCamera: boolean) {
-    const input = inputRef.current;
+    const input = useCamera ? cameraInputRef.current : fileInputRef.current;
     if (!input) return;
-    if (useCamera) input.setAttribute("capture", "environment");
-    else input.removeAttribute("capture");
     input.click();
   }
   return <div className="photo-picker">
     <input
-      ref={(element) => { inputRef.current = element; }}
+      ref={cameraInputRef}
       className="photo-file-input"
-      aria-label="Cloth photo file"
+      aria-label="Take cloth photo"
+      name="cameraPhoto"
+      type="file"
+      accept="image/*"
+      onChange={(event) => setFileName(event.target.files?.[0]?.name || "")}
+      capture="environment"
+    />
+    <input
+      ref={fileInputRef}
+      className="photo-file-input"
+      aria-label="Choose cloth photo from device"
       name="clothPhoto"
       type="file"
       accept="image/*"
-      required={required}
       onChange={(event) => setFileName(event.target.files?.[0]?.name || "")}
     />
     <div className="photo-picker-preview"><span className="photo-upload-icon">▧</span><span><strong>{fileName || currentPhotoName || "No photo selected"}</strong><small>JPG, PNG or HEIC · clear, well-lit photos work best</small></span></div>

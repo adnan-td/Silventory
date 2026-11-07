@@ -10,6 +10,12 @@ function requireToken() {
   }
 }
 
+function getClothPhoto(formData: FormData) {
+  return ["cameraPhoto", "clothPhoto"]
+    .map((field) => formData.get(field))
+    .find((photo): photo is File => photo instanceof File && photo.size > 0);
+}
+
 export type ImportedContact = { name: string; phone?: string; email?: string };
 
 export async function importContacts(contacts: ImportedContact[]) {
@@ -57,15 +63,17 @@ export async function createStitchingRequest(formData: FormData) {
   const requestDate = String(formData.get("requestDate") || "");
   const expectedDeliveryDate = String(formData.get("expectedDeliveryDate") || "");
   const timeRequiredHours = Number(formData.get("timeRequiredHours"));
-  const photo = formData.get("clothPhoto");
+  const photo = getClothPhoto(formData);
   const contactId = String(formData.get("contactId") || "");
   const newContactName = String(formData.get("newContactName") || "").trim();
 
   if (!title || !requestDate || !expectedDeliveryDate ||
       expectedDeliveryDate < requestDate ||
-      !Number.isInteger(timeRequiredHours) || timeRequiredHours < 1 || timeRequiredHours > 24 ||
-      !(photo instanceof File) || photo.size === 0 || !photo.type.startsWith("image/")) {
-    throw new Error("Complete the required fields and attach a cloth photo.");
+      !Number.isInteger(timeRequiredHours) || timeRequiredHours < 1 || timeRequiredHours > 24) {
+    throw new Error("Complete the required fields.");
+  }
+  if (photo && !photo.type.startsWith("image/")) {
+    throw new Error("Please choose an image for the cloth photo.");
   }
 
   let customer = contactId;
@@ -80,15 +88,17 @@ export async function createStitchingRequest(formData: FormData) {
   }
   if (!customer) throw new Error("Choose a customer or enter a new customer name.");
 
-  const asset = await writeClient.assets.upload("image", photo, {
-    filename: photo.name || "cloth-photo",
-    contentType: photo.type || undefined,
-  });
+  const clothPhoto = photo
+    ? await writeClient.assets.upload("image", photo, {
+        filename: photo.name || "cloth-photo",
+        contentType: photo.type || undefined,
+      })
+    : undefined;
   await writeClient.create({
     _type: "stitchingRequest",
     title,
     customer: { _type: "reference", _ref: customer },
-    clothPhoto: { _type: "image", asset: { _type: "reference", _ref: asset._id } },
+    ...(clothPhoto && { clothPhoto: { _type: "image", asset: { _type: "reference", _ref: clothPhoto._id } } }),
     requestDate,
     expectedDeliveryDate,
     timeRequiredHours,
@@ -131,13 +141,13 @@ export async function updateStitchingRequest(formData: FormData) {
   const expectedDeliveryDate = String(formData.get("expectedDeliveryDate") || "");
   const timeRequiredHours = Number(formData.get("timeRequiredHours"));
   const status = String(formData.get("status") || "received");
-  const photo = formData.get("clothPhoto");
+  const photo = getClothPhoto(formData);
   const validStatuses = ["received", "inProgress", "delivered", "cancelled"];
   if (!id || !title || !customerId || !requestDate || !expectedDeliveryDate || expectedDeliveryDate < requestDate ||
       !Number.isInteger(timeRequiredHours) || timeRequiredHours < 1 || timeRequiredHours > 24 || !validStatuses.includes(status)) {
     throw new Error("Check the required order details and try again.");
   }
-  if (photo instanceof File && photo.size > 0 && !photo.type.startsWith("image/")) {
+  if (photo && !photo.type.startsWith("image/")) {
     throw new Error("Please choose an image for the cloth photo.");
   }
 
@@ -151,7 +161,7 @@ export async function updateStitchingRequest(formData: FormData) {
     status,
     deliveredAt: status === "delivered" ? new Date().toISOString() : null,
   };
-  if (photo instanceof File && photo.size > 0) {
+  if (photo) {
     const asset = await writeClient.assets.upload("image", photo, {
       filename: photo.name || "cloth-photo",
       contentType: photo.type || undefined,

@@ -28,7 +28,7 @@ export default async function EditOrderPage({ params }: PageProps<"/orders/[id]"
         <div className="field-block"><label htmlFor="title">Order name <i>*</i></label><input id="title" name="title" required defaultValue={order.title} /></div>
       </section>
       <section className="form-section"><div className="form-section-title"><span>02</span><div><h2>Cloth photo and notes</h2><p>Attach a replacement photo or update the details.</p></div></div>
-        <div className="field-block"><label>Cloth photo</label><ClothPhotoPicker required={false} currentPhotoName="Current cloth photo is saved · select a new one to replace it" /></div>
+        <div className="field-block"><label>Cloth photo <span className="optional">Optional</span></label><ClothPhotoPicker currentPhotoName={order.clothPhoto?.asset?._ref ? "Current cloth photo is saved · select a new one to replace it" : undefined} /></div>
         <div className="field-block"><label htmlFor="comments">Extra comments <span className="optional">Optional</span></label><textarea id="comments" name="comments" rows={4} defaultValue={order.comments || ""} /></div>
       </section>
       <section className="form-section"><div className="form-section-title"><span>03</span><div><h2>Timing and progress</h2><p>Adjust the schedule, work estimate, or status.</p></div></div>
