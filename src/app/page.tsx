@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { OrderList } from "./components";
 import { Header } from "./interactions";
 import { getOrders, isOpen } from "@/sanity/lib/silventory";
@@ -6,6 +7,7 @@ import { getOrders, isOpen } from "@/sanity/lib/silventory";
 export const instant = false;
 
 export default async function Home() {
+  await connection();
   const orders = await getOrders();
   const today = new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(new Date());
   const openOrders = orders.filter(isOpen);
