@@ -1,22 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { updateOrderStatus } from "./actions";
 import { urlFor } from "@/sanity/lib/image";
 import type { Order } from "@/sanity/lib/silventory";
-
-export function Header() {
-  return (
-    <header className="topbar">
-      <Link href="/" className="brand"><span className="brand-mark">s</span><span>silventory<span className="brand-dot">.</span></span></Link>
-      <nav aria-label="Main navigation">
-        <Link href="/">Dashboard</Link>
-        <Link href="/orders">Orders</Link>
-        <Link href="/contacts">Contacts</Link>
-      </nav>
-      <Link className="button button-primary top-action" href="/orders/new"><span>＋</span> New order</Link>
-    </header>
-  );
-}
+import { OrderStatusSelector } from "./interactions";
 
 const statusLabels: Record<Order["status"], string> = {
   received: "Received", inProgress: "In progress", ready: "Ready", delivered: "Delivered", cancelled: "Cancelled",
@@ -32,19 +18,15 @@ export function OrderList({ orders, compact = false }: { orders: Order[]; compac
     {orders.map((order, index) => {
       const photo = order.clothPhoto?.asset?._ref ? urlFor(order.clothPhoto as never).width(120).height(120).fit("crop").url() : null;
       return <article className="order-row" key={order._id}>
-        <div className="order-thumb">{photo ? <Image src={photo} alt="" width={120} height={120} unoptimized /> : <span>✳</span>}</div>
-        <div className="order-main">
-          <div className="order-heading"><h3>{order.title}</h3><StatusPill status={order.status} /></div>
-          <p>{order.customer?.name || "Customer"}<span className="dot-separator">·</span>{order.timeRequiredHours}h of work</p>
-        </div>
-        <div className="order-date"><span>Expected delivery</span><strong>{formatDate(order.expectedDeliveryDate)}</strong></div>
-        {!compact && <form action={updateOrderStatus} className="status-form">
-          <input type="hidden" name="orderId" value={order._id} />
-          <select aria-label={`Update ${order.title} status`} name="status" defaultValue={order.status}>
-            {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-          </select>
-          <button type="submit" className="status-save">Save</button>
-        </form>}
+        <Link href={`/orders/${order._id}`} className="order-row-link" aria-label={`Edit order: ${order.title}`}>
+          <span className="order-thumb">{photo ? <Image src={photo} alt="" width={120} height={120} unoptimized /> : <span>✳</span>}</span>
+          <span className="order-main">
+            <span className="order-heading"><span className="order-title">{order.title}</span><StatusPill status={order.status} /></span>
+            <span className="order-subline">{order.customer?.name || "Customer"}<span className="dot-separator">·</span>{order.timeRequiredHours}h of work</span>
+          </span>
+          <span className="order-date"><span>Expected delivery</span><strong>{formatDate(order.expectedDeliveryDate)}</strong></span>
+        </Link>
+        <OrderStatusSelector orderId={order._id} currentStatus={order.status} label={`Update ${order.title} status`} />
         {compact && <span className="queue-number">{String(index + 1).padStart(2, "0")}</span>}
       </article>;
     })}

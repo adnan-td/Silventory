@@ -1,5 +1,6 @@
 import { ContactImporter } from "./contact-importer";
-import { Header, PageHeading } from "../components";
+import { PageHeading } from "../components";
+import { Header } from "../interactions";
 import { getContacts } from "@/sanity/lib/silventory";
 
 export const instant = false;

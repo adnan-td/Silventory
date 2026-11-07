@@ -1,4 +1,5 @@
-import { Header, PageHeading } from "../../components";
+import { PageHeading } from "../../components";
+import { Header } from "../../interactions";
 import { OrderForm } from "./order-form";
 import { getContacts, getOrders, isOpen, localDateString } from "@/sanity/lib/silventory";
 

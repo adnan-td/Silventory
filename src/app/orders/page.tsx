@@ -1,4 +1,5 @@
-import { Header, OrderList, PageHeading } from "../components";
+import { OrderList, PageHeading } from "../components";
+import { Header } from "../interactions";
 import { getOrders } from "@/sanity/lib/silventory";
 
 export const instant = false;

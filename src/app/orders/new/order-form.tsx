@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Contact } from "@/sanity/lib/silventory";
 import { createStitchingRequest } from "../../actions";
+import { ClothPhotoPicker, ContactPicker } from "../../interactions";
 
 export function OrderForm({ contacts, pendingHours, today }: { contacts: Contact[]; pendingHours: number; today: string }) {
   const [newContact, setNewContact] = useState(false);
@@ -10,7 +11,7 @@ export function OrderForm({ contacts, pendingHours, today }: { contacts: Contact
   const completionDays = Math.ceil((pendingHours + hours) / 5);
   return <form action={createStitchingRequest} className="order-form">
     <div className="form-section"><div className="form-section-title"><span>01</span><div><h2>The customer</h2><p>Who are we making this for?</p></div></div>
-      <div className="field-block"><label htmlFor="contactId">Choose from your contacts</label><div className="select-wrap"><select id="contactId" name="contactId" disabled={newContact} required={!newContact} defaultValue=""><option value="">Select a customer…</option>{contacts.map((contact) => <option value={contact._id} key={contact._id}>{contact.name}{contact.phone ? ` · ${contact.phone}` : ""}</option>)}</select><span>⌄</span></div></div>
+      <div className="field-block"><label htmlFor="contactId">Choose from your contacts</label><ContactPicker contacts={contacts} disabled={newContact} required={!newContact} /></div>
       <div className="or-divider"><span>or add someone new</span></div>
       <button type="button" className={`new-contact-toggle ${newContact ? "selected" : ""}`} onClick={() => setNewContact(!newContact)}><span className="toggle-check">{newContact ? "✓" : "+"}</span>{newContact ? "New customer details" : "Create a new customer"}<span className="toggle-chevron">{newContact ? "−" : "＋"}</span></button>
       {newContact && <div className="new-contact-fields"><div className="field-block"><label htmlFor="newContactName">Customer name <i>*</i></label><input required id="newContactName" name="newContactName" placeholder="e.g. Asha Mehta" /></div><div className="form-grid"><div className="field-block"><label htmlFor="newContactPhone">Phone number</label><input id="newContactPhone" name="newContactPhone" type="tel" placeholder="+91 98765 43210" /></div><div className="field-block"><label htmlFor="newContactEmail">Email address</label><input id="newContactEmail" name="newContactEmail" type="email" placeholder="asha@example.com" /></div></div></div>}
@@ -18,7 +19,7 @@ export function OrderForm({ contacts, pendingHours, today }: { contacts: Contact
 
     <div className="form-section"><div className="form-section-title"><span>02</span><div><h2>What are we stitching?</h2><p>Add the piece and a little inspiration.</p></div></div>
       <div className="field-block"><label htmlFor="title">Order name <i>*</i></label><input id="title" name="title" required placeholder="e.g. Lavender silk kurta" /></div>
-      <div className="field-block"><label htmlFor="clothPhoto">Cloth photo <i>*</i></label><label className="photo-upload" htmlFor="clothPhoto"><span className="photo-upload-icon">▧</span><span><strong>Choose a photo of the cloth</strong><small>JPG, PNG or HEIC · a clear, well-lit photo works best</small></span><span className="button button-outline">Upload photo</span><input id="clothPhoto" name="clothPhoto" type="file" accept="image/*" required /></label></div>
+      <div className="field-block"><label>Cloth photo <i>*</i></label><ClothPhotoPicker /></div>
       <div className="field-block"><label htmlFor="comments">A few extra notes <span className="optional">Optional</span></label><textarea id="comments" name="comments" rows={3} placeholder="Measurements, style notes, fabric details…" /></div>
     </div>
 

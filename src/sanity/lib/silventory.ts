@@ -39,6 +39,17 @@ export async function getOrders(): Promise<Order[]> {
   );
 }
 
+export async function getOrder(id: string): Promise<Order | null> {
+  return client.fetch(
+    `*[_type == "stitchingRequest" && _id == $id][0] {
+      _id, title, requestDate, expectedDeliveryDate, timeRequiredHours, status,
+      comments, clothPhoto, deliveredAt, "customer": customer->{_id, name, phone, email}
+    }`,
+    { id },
+    { cache: "no-store" },
+  );
+}
+
 export function localDateString(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Kolkata",

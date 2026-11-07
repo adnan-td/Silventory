@@ -114,4 +114,48 @@ export async function updateOrderStatus(formData: FormData) {
   }).commit();
   revalidatePath("/");
   revalidatePath("/orders");
+  revalidatePath(`/orders/${id}`);
+}
+
+export async function updateStitchingRequest(formData: FormData) {
+  requireToken();
+  const id = String(formData.get("orderId") || "");
+  const title = String(formData.get("title") || "").trim();
+  const customerId = String(formData.get("contactId") || "");
+  const requestDate = String(formData.get("requestDate") || "");
+  const expectedDeliveryDate = String(formData.get("expectedDeliveryDate") || "");
+  const timeRequiredHours = Number(formData.get("timeRequiredHours"));
+  const status = String(formData.get("status") || "received");
+  const photo = formData.get("clothPhoto");
+  const validStatuses = ["received", "inProgress", "ready", "delivered", "cancelled"];
+  if (!id || !title || !customerId || !requestDate || !expectedDeliveryDate || expectedDeliveryDate < requestDate ||
+      !Number.isInteger(timeRequiredHours) || timeRequiredHours < 1 || timeRequiredHours > 24 || !validStatuses.includes(status)) {
+    throw new Error("Check the required order details and try again.");
+  }
+  if (photo instanceof File && photo.size > 0 && !photo.type.startsWith("image/")) {
+    throw new Error("Please choose an image for the cloth photo.");
+  }
+
+  const updates: Record<string, unknown> = {
+    title,
+    customer: { _type: "reference", _ref: customerId },
+    requestDate,
+    expectedDeliveryDate,
+    timeRequiredHours,
+    comments: String(formData.get("comments") || "").trim() || null,
+    status,
+    deliveredAt: status === "delivered" ? new Date().toISOString() : null,
+  };
+  if (photo instanceof File && photo.size > 0) {
+    const asset = await writeClient.assets.upload("image", photo, {
+      filename: photo.name || "cloth-photo",
+      contentType: photo.type || undefined,
+    });
+    updates.clothPhoto = { _type: "image", asset: { _type: "reference", _ref: asset._id } };
+  }
+  await writeClient.patch(id).set(updates).commit();
+  revalidatePath("/");
+  revalidatePath("/orders");
+  revalidatePath(`/orders/${id}`);
+  redirect(`/orders/${id}?saved=1`);
 }

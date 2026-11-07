@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Header, OrderList } from "./components";
+import { OrderList } from "./components";
+import { Header } from "./interactions";
 import { getOrders, isOpen } from "@/sanity/lib/silventory";
 
 export const instant = false;
