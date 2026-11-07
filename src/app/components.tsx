@@ -20,9 +20,9 @@ export function OrderList({ orders, compact = false }: { orders: Order[]; compac
       return <article className="order-row" key={order._id}>
         <Link href={`/orders/${order._id}`} className="order-row-link" aria-label={`Edit order: ${order.title}`}>
           <span className="order-thumb">{photo ? <Image src={photo} alt="" width={120} height={120} unoptimized /> : <span>✳</span>}</span>
-          <span className="order-main">
-            <span className="order-heading"><span className="order-title">{order.title}</span><StatusPill status={order.status} /></span>
-            <span className="order-subline">{order.customer?.name || "Customer"}<span className="dot-separator">·</span>{order.timeRequiredHours}h of work</span>
+          <span className="order-main max-w-fit">
+            <span className="order-heading"><span className="order-title max-w-fit">{order.title}</span><StatusPill status={order.status} /></span>
+            <span className="order-subline max-w-fit">{order.customer?.name || "Customer"}<span className="dot-separator">·</span>{order.timeRequiredHours}h of work</span>
           </span>
           <span className="order-date"><span>Expected delivery</span><strong>{formatDate(order.expectedDeliveryDate)}</strong></span>
         </Link>

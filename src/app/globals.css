@@ -18,9 +18,8 @@
   .dashboard-columns{grid-template-columns:minmax(0,1fr);width:100%}
   .queue-panel,.side-stack{width:100%;min-width:0}
   .orders-panel .order-list{max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding-bottom:8px}
-  .orders-panel .order-row{width:680px;min-width:680px;flex-wrap:nowrap}
-  .orders-panel .order-row-link{flex:0 0 490px}
-  .orders-panel .status-select{flex:0 0 145px;margin-left:0}
+  .orders-panel .order-row{min-width:max-content;max-width:fit-content;flex-wrap:nowrap}
+  .orders-panel .status-select{flex:0 1 auto;margin-left:0}
   .orders-panel .queue-number{flex:0 0 20px}
 }
 
@@ -60,4 +59,8 @@
   .orders-panel{width:100%;min-width:0;overflow:hidden}
   .orders-panel>.order-list{display:block;width:100%;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;}
   .orders-panel .order-row{box-sizing:border-box;}
+}
+
+.app-main.interior-page {
+  width: 100%;
 }
