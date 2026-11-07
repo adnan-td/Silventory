@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Silventory
 
-## Getting Started
+Silventory is an inventory and order-tracking workspace for a tailoring shop. It uses Next.js App Router and Sanity for contacts, stitching requests, and cloth photos.
 
-First, run the development server:
+## Features
+
+- Dashboard with recent order activity, pending work hours, and a first-come-first-served order queue.
+- Stitching requests with customer details, cloth photo, request and delivery dates, comments, and an estimate of 1–24 hours.
+- Contact book with one-time VCF or CSV import and duplicate detection.
+- Order status tracking and delivered-order timestamps.
+- Sanity Studio at `/studio` for maintenance.
+
+## Run locally
+
+1. Install dependencies with `npm install`.
+2. Copy `.env.example` to `.env.local` and fill in the Sanity project ID, dataset, and API version.
+3. Create a Sanity API token with read and write access to the dataset, then set it as `SANITY_SILVENTORY_API_TOKEN` in `.env.local`.
+4. Start Next.js with `npm run dev` and open [http://localhost:3000](http://localhost:3000).
+
+Keep `.env.local` and all API tokens out of Git. The token is only used by server-side code.
+
+## Commands
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npx tsc --noEmit
+npm run build
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
