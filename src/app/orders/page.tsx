@@ -31,10 +31,6 @@ export default async function OrdersPage() {
             </strong>
           </div>
           <div>
-            <span>Ready for pickup</span>
-            <strong>{orders.filter((order) => order.status === "ready").length}</strong>
-          </div>
-          <div>
             <span>Delivered</span>
             <strong>{orders.filter((order) => order.status === "delivered").length}</strong>
           </div>

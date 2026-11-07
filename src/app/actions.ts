@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { writeClient } from "@/sanity/lib/client";
 
@@ -45,6 +45,7 @@ export async function importContacts(contacts: ImportedContact[]) {
     unique.forEach((contact) => transaction.create({ _type: "contact", ...contact }));
     await transaction.commit();
   }
+  updateTag("contacts");
   revalidatePath("/");
   revalidatePath("/contacts");
   return { imported: unique.length, skipped: cleaned.length - unique.length };
@@ -95,6 +96,8 @@ export async function createStitchingRequest(formData: FormData) {
     status: "received",
   });
 
+  updateTag("orders");
+  if (newContactName) updateTag("contacts");
   revalidatePath("/");
   revalidatePath("/orders");
   revalidatePath("/contacts");
@@ -105,13 +108,15 @@ export async function updateOrderStatus(formData: FormData) {
   requireToken();
   const id = String(formData.get("orderId") || "");
   const status = String(formData.get("status") || "");
-  if (!id || !["received", "inProgress", "ready", "delivered", "cancelled"].includes(status)) {
+  if (!id || !["received", "inProgress", "delivered", "cancelled"].includes(status)) {
     throw new Error("Invalid order update.");
   }
   await writeClient.patch(id).set({
     status,
     ...(status === "delivered" ? { deliveredAt: new Date().toISOString() } : { deliveredAt: null }),
   }).commit();
+  updateTag("orders");
+  updateTag(`order:${id}`);
   revalidatePath("/");
   revalidatePath("/orders");
   revalidatePath(`/orders/${id}`);
@@ -127,7 +132,7 @@ export async function updateStitchingRequest(formData: FormData) {
   const timeRequiredHours = Number(formData.get("timeRequiredHours"));
   const status = String(formData.get("status") || "received");
   const photo = formData.get("clothPhoto");
-  const validStatuses = ["received", "inProgress", "ready", "delivered", "cancelled"];
+  const validStatuses = ["received", "inProgress", "delivered", "cancelled"];
   if (!id || !title || !customerId || !requestDate || !expectedDeliveryDate || expectedDeliveryDate < requestDate ||
       !Number.isInteger(timeRequiredHours) || timeRequiredHours < 1 || timeRequiredHours > 24 || !validStatuses.includes(status)) {
     throw new Error("Check the required order details and try again.");
@@ -154,6 +159,8 @@ export async function updateStitchingRequest(formData: FormData) {
     updates.clothPhoto = { _type: "image", asset: { _type: "reference", _ref: asset._id } };
   }
   await writeClient.patch(id).set(updates).commit();
+  updateTag("orders");
+  updateTag(`order:${id}`);
   revalidatePath("/");
   revalidatePath("/orders");
   revalidatePath(`/orders/${id}`);

@@ -10,7 +10,6 @@ export const instant = false;
 const statuses = [
   ["received", "Received"],
   ["inProgress", "In progress"],
-  ["ready", "Ready for pickup"],
   ["delivered", "Delivered"],
   ["cancelled", "Cancelled"],
 ] as const;
@@ -34,7 +33,7 @@ export default async function EditOrderPage({ params }: PageProps<"/orders/[id]"
       </section>
       <section className="form-section"><div className="form-section-title"><span>03</span><div><h2>Timing and progress</h2><p>Adjust the schedule, work estimate, or status.</p></div></div>
         <div className="form-grid"><div className="field-block"><label htmlFor="requestDate">Date received <i>*</i></label><input id="requestDate" name="requestDate" type="date" required defaultValue={order.requestDate} /></div><div className="field-block"><label htmlFor="expectedDeliveryDate">Expected delivery <i>*</i></label><input id="expectedDeliveryDate" name="expectedDeliveryDate" type="date" required defaultValue={order.expectedDeliveryDate} /></div></div>
-        <div className="form-grid"><div className="field-block"><label htmlFor="timeRequiredHours">Estimated sewing time <i>*</i></label><div className="select-wrap"><select id="timeRequiredHours" name="timeRequiredHours" required defaultValue={order.timeRequiredHours}>{Array.from({ length: 24 }, (_, index) => <option value={index + 1} key={index}>{index + 1} {index === 0 ? "hour" : "hours"}</option>)}</select><span>⌄</span></div></div><div className="field-block"><label htmlFor="status">Order status</label><div className="select-wrap"><select id="status" name="status" defaultValue={order.status}>{statuses.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select><span>⌄</span></div></div></div>
+        <div className="form-grid"><div className="field-block"><label htmlFor="timeRequiredHours">Estimated sewing time <i>*</i></label><div className="select-wrap"><select id="timeRequiredHours" name="timeRequiredHours" required defaultValue={order.timeRequiredHours}>{Array.from({ length: 24 }, (_, index) => <option value={index + 1} key={index}>{index + 1} {index === 0 ? "hour" : "hours"}</option>)}</select><span>⌄</span></div></div><div className="field-block"><label htmlFor="status">Order status</label><div className="select-wrap"><select id="status" name="status" required defaultValue={order.status === "ready" ? "" : order.status}>{order.status === "ready" && <option value="" disabled>Choose a status</option>}{statuses.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select><span>⌄</span></div></div></div>
       </section>
       <div className="form-actions"><p>Changes save to the order book.</p><button className="button button-primary submit-order" type="submit">Save order changes <span>→</span></button></div>
     </form>

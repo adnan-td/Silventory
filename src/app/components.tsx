@@ -18,7 +18,7 @@ export function OrderList({ orders, compact = false }: { orders: Order[]; compac
     {orders.map((order, index) => {
       const photo = order.clothPhoto?.asset?._ref ? urlFor(order.clothPhoto as never).width(120).height(120).fit("crop").url() : null;
       return <article className="order-row" key={order._id}>
-        <Link href={`/orders/${order._id}`} className="order-row-link" aria-label={`Edit order: ${order.title}`}>
+        <Link href={`/orders/${order._id}`} prefetch={true} className="order-row-link" aria-label={`Edit order: ${order.title}`}>
           <span className="order-thumb">{photo ? <Image src={photo} alt="" width={120} height={120} unoptimized /> : <span>✳</span>}</span>
           <span className="order-main max-w-fit">
             <span className="order-heading"><span className="order-title max-w-fit">{order.title}</span><StatusPill status={order.status} /></span>

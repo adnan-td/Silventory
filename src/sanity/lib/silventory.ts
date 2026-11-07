@@ -1,4 +1,5 @@
 import { client } from "@/sanity/lib/client";
+import { cacheLife, cacheTag } from "next/cache";
 
 export type Contact = {
   _id: string;
@@ -21,36 +22,42 @@ export type Order = {
 };
 
 export async function getContacts(): Promise<Contact[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("contacts");
   return client.fetch(
     `*[_type == "contact"] | order(name asc) { _id, name, phone, email }`,
     {},
-    { cache: "no-store" },
   );
 }
 
 export async function getOrders(): Promise<Order[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("orders");
   return client.fetch(
     `*[_type == "stitchingRequest"] | order(requestDate asc, _createdAt asc) {
       _id, title, requestDate, expectedDeliveryDate, timeRequiredHours, status,
       comments, clothPhoto, deliveredAt, "customer": customer->{_id, name, phone, email}
     }`,
     {},
-    { cache: "no-store" },
   );
 }
 
 export async function getOrder(id: string): Promise<Order | null> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("orders", `order:${id}`);
   return client.fetch(
     `*[_type == "stitchingRequest" && _id == $id][0] {
       _id, title, requestDate, expectedDeliveryDate, timeRequiredHours, status,
       comments, clothPhoto, deliveredAt, "customer": customer->{_id, name, phone, email}
     }`,
     { id },
-    { cache: "no-store" },
   );
 }
 
-export function localDateString(date = new Date()) {
+export function localDateString(date: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Kolkata",
     year: "numeric",

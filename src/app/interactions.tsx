@@ -8,24 +8,25 @@ import { useEffect, useRef, useState, useTransition, type ChangeEvent, type Keyb
 import type { Contact, Order } from "@/sanity/lib/silventory";
 import { updateOrderStatus } from "./actions";
 
-const statuses: { value: Order["status"]; label: string }[] = [
+type EditableOrderStatus = Exclude<Order["status"], "ready">;
+
+const statuses: { value: EditableOrderStatus; label: string }[] = [
   { value: "received", label: "Received" },
   { value: "inProgress", label: "In progress" },
-  { value: "ready", label: "Ready for pickup" },
   { value: "delivered", label: "Delivered" },
   { value: "cancelled", label: "Cancelled" },
 ];
 
 export function Header() {
   return <header className="topbar">
-    <Link href="/" className="brand" aria-label="Silventory dashboard">
+    <Link href="/" prefetch={true} className="brand" aria-label="Silventory dashboard">
       <Image src="/silventory-icon.svg" alt="" width={36} height={36} className="brand-mark-image" />
       <span>silventory<span className="brand-dot">.</span></span>
     </Link>
-    <Suspense fallback={<nav className="main-navigation" aria-label="Main navigation"><Link href="/">Dashboard</Link><Link href="/orders">Orders</Link><Link href="/contacts">Contacts</Link></nav>}>
+    <Suspense fallback={<nav className="main-navigation" aria-label="Main navigation"><Link href="/" prefetch={true}>Dashboard</Link><Link href="/orders" prefetch={true}>Orders</Link><Link href="/contacts" prefetch={true}>Contacts</Link></nav>}>
       <ActiveNavigation />
     </Suspense>
-    <Link className="button button-primary top-action" href="/orders/new"><span>＋</span> New order</Link>
+    <Link className="button button-primary top-action" href="/orders/new" prefetch={true}><span>＋</span> New order</Link>
   </header>;
 }
 
@@ -35,17 +36,17 @@ function ActiveNavigation() {
   const dashboardActive = pathname === "/";
   const contactsActive = pathname === "/contacts" || pathname.startsWith("/contacts/");
   return <nav className="main-navigation" aria-label="Main navigation">
-      <Link href="/" aria-current={dashboardActive ? "page" : undefined}>Dashboard</Link>
-      <Link href="/orders" aria-current={ordersActive ? "page" : undefined}>Orders</Link>
-      <Link href="/contacts" aria-current={contactsActive ? "page" : undefined}>Contacts</Link>
+      <Link href="/" prefetch={true} aria-current={dashboardActive ? "page" : undefined}>Dashboard</Link>
+      <Link href="/orders" prefetch={true} aria-current={ordersActive ? "page" : undefined}>Orders</Link>
+      <Link href="/contacts" prefetch={true} aria-current={contactsActive ? "page" : undefined}>Contacts</Link>
   </nav>;
 }
 
 export function OrderStatusSelector({ orderId, currentStatus, label }: { orderId: string; currentStatus: Order["status"]; label: string }) {
-  const [status, setStatus] = useState(currentStatus);
+  const [status, setStatus] = useState<EditableOrderStatus | "">(currentStatus === "ready" ? "" : currentStatus);
   const [pending, startTransition] = useTransition();
   function save(event: ChangeEvent<HTMLSelectElement>) {
-    const nextStatus = event.currentTarget.value as Order["status"];
+    const nextStatus = event.currentTarget.value as EditableOrderStatus;
     setStatus(nextStatus);
     const data = new FormData();
     data.set("orderId", orderId);
@@ -53,6 +54,7 @@ export function OrderStatusSelector({ orderId, currentStatus, label }: { orderId
     startTransition(() => updateOrderStatus(data));
   }
   return <select className="status-select" aria-label={label} value={status} onChange={save} disabled={pending}>
+    {currentStatus === "ready" && <option value="" disabled>Choose a status</option>}
     {statuses.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
   </select>;
 }

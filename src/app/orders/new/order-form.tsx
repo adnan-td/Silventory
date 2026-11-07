@@ -1,14 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Contact } from "@/sanity/lib/silventory";
 import { createStitchingRequest } from "../../actions";
 import { ClothPhotoPicker, ContactPicker } from "../../interactions";
 
-export function OrderForm({ contacts, pendingHours, today }: { contacts: Contact[]; pendingHours: number; today: string }) {
+function todayInKolkata() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+export function OrderForm({ contacts, pendingHours }: { contacts: Contact[]; pendingHours: number }) {
   const [newContact, setNewContact] = useState(false);
   const [hours, setHours] = useState(2);
+  const [requestDate, setRequestDate] = useState("");
+  const [expectedDeliveryDate, setExpectedDeliveryDate] = useState("");
   const completionDays = Math.ceil((pendingHours + hours) / 5);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const today = todayInKolkata();
+      setRequestDate(today);
+      setExpectedDeliveryDate(today);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   return <form action={createStitchingRequest} className="order-form">
     <div className="form-section"><div className="form-section-title"><span>01</span><div><h2>The customer</h2><p>Who are we making this for?</p></div></div>
       <div className="field-block"><label htmlFor="contactId">Choose from your contacts</label><ContactPicker contacts={contacts} disabled={newContact} required={!newContact} /></div>
@@ -24,7 +45,7 @@ export function OrderForm({ contacts, pendingHours, today }: { contacts: Contact
     </div>
 
     <div className="form-section"><div className="form-section-title"><span>03</span><div><h2>The timing</h2><p>Set the dates and estimate the sewing time.</p></div></div>
-      <div className="form-grid"><div className="field-block"><label htmlFor="requestDate">Date received <i>*</i></label><input id="requestDate" name="requestDate" type="date" required defaultValue={today} /></div><div className="field-block"><label htmlFor="expectedDeliveryDate">Expected delivery <i>*</i></label><input id="expectedDeliveryDate" name="expectedDeliveryDate" type="date" required defaultValue={today} /></div></div>
+      <div className="form-grid"><div className="field-block"><label htmlFor="requestDate">Date received <i>*</i></label><input id="requestDate" name="requestDate" type="date" required value={requestDate} onChange={(event) => setRequestDate(event.target.value)} /></div><div className="field-block"><label htmlFor="expectedDeliveryDate">Expected delivery <i>*</i></label><input id="expectedDeliveryDate" name="expectedDeliveryDate" type="date" required value={expectedDeliveryDate} onChange={(event) => setExpectedDeliveryDate(event.target.value)} /></div></div>
       <div className="field-block"><label htmlFor="timeRequiredHours">Estimated sewing time <i>*</i></label><div className="select-wrap"><select id="timeRequiredHours" name="timeRequiredHours" value={hours} onChange={(event) => setHours(Number(event.target.value))}>{Array.from({ length: 24 }, (_, index) => <option value={index + 1} key={index}>{index + 1} {index === 0 ? "hour" : "hours"}</option>)}</select><span>⌄</span></div></div>
       <aside className="completion-note"><span className="completion-icon">◷</span><p><strong>This order is {pendingHours} hours into the queue.</strong><br />With your existing work ahead, you’ll finish this order in about <strong>{completionDays} {completionDays === 1 ? "workday" : "workdays"}</strong>, at 5 hours of sewing a day.</p></aside>
     </div>

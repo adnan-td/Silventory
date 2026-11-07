@@ -65,7 +65,6 @@ export default defineType({
         list: [
           {title: 'Received', value: 'received'},
           {title: 'In progress', value: 'inProgress'},
-          {title: 'Ready for pickup', value: 'ready'},
           {title: 'Delivered', value: 'delivered'},
           {title: 'Cancelled', value: 'cancelled'},
         ],
