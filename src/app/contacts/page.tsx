@@ -7,7 +7,7 @@ export const instant = false;
 
 export default async function ContactsPage() {
   const contacts = await getContacts();
-  return <><Header /><main className="app-main interior-page">
+  return <><Header /><main className="app-main interior-page contacts-page">
     <PageHeading eyebrow="Your address book" title="Good work starts with good people." description="Keep every customer’s details close, ready for the next fitting." />
     <ContactImporter />
     <section className="panel contacts-panel"><div className="section-heading"><div><p className="eyebrow">Customer list</p><h2>All contacts <span className="heading-count">{contacts.length}</span></h2></div><span className="count-badge">{contacts.length} people</span></div>

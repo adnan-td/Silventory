@@ -23,3 +23,25 @@
   .orders-panel .status-select{flex:0 0 145px;margin-left:0}
   .orders-panel .queue-number{flex:0 0 20px}
 }
+
+@media(max-width:650px){
+  .contacts-page,.contacts-page>*{min-width:0;max-width:100%}
+  .contacts-page .page-heading h1{overflow-wrap:anywhere}
+  .contacts-page .import-card-heading>div{flex:1;min-width:0}
+  .contacts-page .import-card-heading h2,.contacts-page .import-card-heading p{overflow-wrap:anywhere}
+  .contacts-page .upload-zone{min-width:0;max-width:100%;padding-inline:12px}
+  .contacts-page .upload-zone strong{max-width:100%;overflow-wrap:anywhere}
+  .contacts-page .preview-top{min-width:0;flex-wrap:wrap}
+  .contacts-page .preview-top>div{min-width:0;flex:1 1 140px}
+  .contacts-page .preview-top button{max-width:100%;white-space:normal}
+  .contacts-page .contact-preview-list>div{min-width:0;flex-wrap:wrap}
+  .contacts-page .contact-preview-list strong{min-width:0;flex:1 1 120px;overflow-wrap:anywhere}
+  .contacts-page .contact-preview-list>div>span:last-child{min-width:0;flex:1 1 120px;overflow-wrap:anywhere;text-align:left}
+  .contacts-page .contact-row{min-width:0}
+  .contacts-page .contact-row>div{min-width:0;flex:1}
+  .contacts-page .contact-row p{overflow-wrap:anywhere;word-break:break-word}
+  .contacts-page .contact-row-glyph{flex:0 0 auto}
+  .contacts-page .app-footer{flex-wrap:wrap;row-gap:8px}
+  .contacts-page .app-footer>span{min-width:0;flex:1 1 140px;overflow-wrap:anywhere}
+  .contacts-page .app-footer>span:last-child{text-align:left}
+}
