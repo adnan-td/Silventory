@@ -1,11 +1,28 @@
-import { OrderList, PageHeading } from "../components";
+import { PageHeading } from "../components";
 import { Header } from "../interactions";
-import { getOrders } from "@/sanity/lib/silventory";
+import { FilterableOrderList } from "../order-list-filter";
+import { getOrders, type Order } from "@/sanity/lib/silventory";
 
 export const instant = false;
 
 export default async function OrdersPage() {
   const orders = await getOrders();
+  const statusOrder: Record<Order["status"], number> = {
+    inProgress: 0,
+    ready: 0,
+    received: 1,
+    delivered: 2,
+    cancelled: 3,
+  };
+  const sortedOrders = orders
+    .map((order, index) => ({ order, index }))
+    .sort(
+      (a, b) =>
+        statusOrder[a.order.status] - statusOrder[b.order.status] ||
+        a.order.requestDate.localeCompare(b.order.requestDate) ||
+        a.index - b.index,
+    )
+    .map(({ order }) => order);
   const active = orders.filter(
     (order) => order.status !== "delivered" && order.status !== "cancelled",
   );
@@ -44,7 +61,7 @@ export default async function OrdersPage() {
               </h2>
             </div>
           </div>
-          <OrderList orders={orders} />
+          <FilterableOrderList orders={sortedOrders} />
         </section>
         <footer className="app-footer">
           <span>

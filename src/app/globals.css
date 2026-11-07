@@ -18,7 +18,7 @@
   .dashboard-columns{grid-template-columns:minmax(0,1fr);width:100%}
   .queue-panel,.side-stack{width:100%;min-width:0}
   .orders-panel .order-list{max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding-bottom:8px}
-  .orders-panel .order-row{min-width:max-content;max-width:fit-content;flex-wrap:nowrap}
+  .orders-panel .order-row{width:100%;min-width:0;max-width:100%;flex-wrap:nowrap}
   .orders-panel .status-select{flex:0 1 auto;margin-left:0}
   .orders-panel .queue-number{flex:0 0 20px}
 }
@@ -59,6 +59,28 @@
   .orders-panel{width:100%;min-width:0;overflow:hidden}
   .orders-panel>.order-list{display:block;width:100%;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;}
   .orders-panel .order-row{box-sizing:border-box;}
+}
+
+.orders-panel .order-row{display:grid;grid-template-columns:minmax(0,1fr) 140px;align-items:center;gap:14px;width:100%;min-width:0;max-width:100%}
+.orders-panel .order-row-link{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(100px,140px);gap:13px;width:100%;min-width:0}
+.orders-panel .order-main{min-width:0}
+.orders-panel .order-title{display:block;min-width:0;max-width:100%}
+.orders-panel .order-subline{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.orders-panel .order-date{min-width:0}
+.orders-panel .status-select{width:100%;min-width:0;max-width:none;margin:0}
+.order-filter{display:flex;align-items:center;gap:9px;margin:12px 0 0 auto}
+.order-filter label{font-size:11px;color:#918b99}
+.order-filter-select{min-height:38px;min-width:145px;padding:8px 30px 8px 11px;border:1px solid #e7e1ef;border-radius:9px;background:#fff;color:#584d69;font-size:12px}
+@media(max-width:650px){
+  .orders-panel .order-row{grid-template-columns:minmax(0,1fr);gap:8px;padding:13px 0}
+  .orders-panel .order-row-link{grid-template-columns:40px minmax(0,1fr) 70px;gap:9px}
+  .orders-panel .status-select{grid-column:1;justify-self:end;width:min(100%,180px)}
+  .order-filter{margin-top:0;flex:0 0 auto}
+}
+@media(max-width:380px){
+  .orders-panel .order-row-link{grid-template-columns:40px minmax(0,1fr) 61px;gap:7px}
+  .order-filter{gap:6px}
+  .order-filter-select{min-width:125px}
 }
 
 .app-main.interior-page {
