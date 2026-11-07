@@ -23,9 +23,9 @@ export default async function Home() {
     </section>
 
     <section className="stats-grid" aria-label="Workshop statistics">
-      <article className="stat-card stat-purple"><div className="stat-top"><span>Orders received</span><span className="stat-symbol">↗</span></div><strong>{receivedThisWeek}</strong><p>in the last 7 days</p><span className="stat-decoration">01</span></article>
+      <article className="stat-card stat-purple"><div className="stat-top"><span>All orders</span><span className="stat-symbol">▤</span></div><strong>{orders.length}</strong><p>{openOrders.length} currently in the queue</p><span className="stat-decoration">01</span></article>
       <article className="stat-card"><div className="stat-top"><span>Orders delivered</span><span className="stat-symbol">✓</span></div><strong>{deliveredThisWeek}</strong><p>in the last 7 days</p><span className="stat-decoration">02</span></article>
-      <article className="stat-card"><div className="stat-top"><span>All-time orders</span><span className="stat-symbol">▤</span></div><strong>{orders.length}</strong><p>{openOrders.length} currently in the queue</p><span className="stat-decoration">03</span></article>
+      <article className="stat-card"><div className="stat-top"><span>Orders received</span><span className="stat-symbol">↗</span></div><strong>{receivedThisWeek}</strong><p>in the last 7 days</p><span className="stat-decoration">03</span></article>
       <article className="stat-card stat-lilac"><div className="stat-top"><span>Work pending</span><span className="stat-symbol">◷</span></div><strong>{pendingHours}<small> hrs</small></strong><p>about {Math.ceil(pendingHours / 5)} work {Math.ceil(pendingHours / 5) === 1 ? "day" : "days"} at 5h/day</p><span className="stat-decoration">04</span></article>
     </section>
 
