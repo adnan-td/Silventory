@@ -6,8 +6,6 @@ import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { useEffect, useRef, useState, useTransition, type ChangeEvent, type KeyboardEvent } from "react";
 import type { Contact, Order } from "@/sanity/lib/silventory";
-import { updateOrderStatus } from "./actions";
-
 type EditableOrderStatus = Exclude<Order["status"], "ready">;
 
 const statuses: { value: EditableOrderStatus; label: string }[] = [
@@ -47,11 +45,28 @@ export function OrderStatusSelector({ orderId, currentStatus, label }: { orderId
   const [pending, startTransition] = useTransition();
   function save(event: ChangeEvent<HTMLSelectElement>) {
     const nextStatus = event.currentTarget.value as EditableOrderStatus;
+    const previousStatus = status;
     setStatus(nextStatus);
     const data = new FormData();
     data.set("orderId", orderId);
     data.set("status", nextStatus);
-    startTransition(() => updateOrderStatus(data));
+    startTransition(async () => {
+      let lastError: Error | undefined;
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          const response = await fetch("/api/orders/status", { method: "POST", body: data });
+          if (!response.ok) throw new Error(`Order status update failed with status ${response.status}.`);
+          return;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          if (attempt < 2) await new Promise((resolve) => window.setTimeout(resolve, 300 * (attempt + 1)));
+        }
+      }
+      if (lastError) {
+        console.error("Could not save order status after retrying.", lastError);
+      }
+      setStatus(previousStatus);
+    });
   }
   return <select className="status-select" aria-label={label} value={status} onChange={save} disabled={pending}>
     {currentStatus === "ready" && <option value="" disabled>Choose a status</option>}

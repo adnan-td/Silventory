@@ -7,6 +7,7 @@ export const client = createClient({
   dataset,
   apiVersion,
   useCdn: false,
+  maxRetries: 7,
   token: process.env.SANITY_SILVENTORY_API_TOKEN,
 })
 
@@ -15,5 +16,6 @@ export const writeClient = createClient({
   dataset,
   apiVersion,
   useCdn: false,
+  maxRetries: 7,
   token: process.env.SANITY_SILVENTORY_API_TOKEN,
 })

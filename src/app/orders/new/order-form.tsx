@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { Contact } from "@/sanity/lib/silventory";
-import { createStitchingRequest } from "../../actions";
 import { ClothPhotoPicker, ContactPicker } from "../../interactions";
+import { OrderSubmitForm } from "../../order-submit-form";
 
 function todayInKolkata() {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -16,7 +16,7 @@ function todayInKolkata() {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
-export function OrderForm({ contacts, pendingHours }: { contacts: Contact[]; pendingHours: number }) {
+export function OrderForm({ contacts, pendingHours, orderId, newContactId }: { contacts: Contact[]; pendingHours: number; orderId: string; newContactId: string }) {
   const [newContact, setNewContact] = useState(false);
   const [hours, setHours] = useState(2);
   const [requestDate, setRequestDate] = useState("");
@@ -30,7 +30,15 @@ export function OrderForm({ contacts, pendingHours }: { contacts: Contact[]; pen
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
-  return <form action={createStitchingRequest} className="order-form">
+  return <OrderSubmitForm
+    action="/api/orders"
+    destination="/?created=1"
+    className="order-form"
+    hint={<><i>*</i> Required fields</>}
+    submitLabel="Add to the order queue"
+  >
+    <input type="hidden" name="orderId" value={orderId} />
+    <input type="hidden" name="newContactId" value={newContactId} />
     <div className="form-section"><div className="form-section-title"><span>01</span><div><h2>The customer</h2><p>Who are we making this for?</p></div></div>
       <div className="field-block"><label htmlFor="contactId">Choose from your contacts</label><ContactPicker contacts={contacts} disabled={newContact} required={!newContact} /></div>
       <div className="or-divider"><span>or add someone new</span></div>
@@ -49,6 +57,5 @@ export function OrderForm({ contacts, pendingHours }: { contacts: Contact[]; pen
       <div className="field-block"><label htmlFor="timeRequiredHours">Estimated sewing time <i>*</i></label><div className="select-wrap"><select id="timeRequiredHours" name="timeRequiredHours" value={hours} onChange={(event) => setHours(Number(event.target.value))}>{Array.from({ length: 24 }, (_, index) => <option value={index + 1} key={index}>{index + 1} {index === 0 ? "hour" : "hours"}</option>)}</select><span>⌄</span></div></div>
       <aside className="completion-note"><span className="completion-icon">◷</span><p><strong>This order is {pendingHours} hours into the queue.</strong><br />With your existing work ahead, you’ll finish this order in about <strong>{completionDays} {completionDays === 1 ? "workday" : "workdays"}</strong>, at 5 hours of sewing a day.</p></aside>
     </div>
-    <div className="form-actions"><p><i>*</i> Required fields</p><button className="button button-primary submit-order" type="submit">Add to the order queue <span>→</span></button></div>
-  </form>;
+  </OrderSubmitForm>;
 }
