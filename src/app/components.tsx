@@ -26,7 +26,7 @@ export function OrderList({ orders, compact = false }: { orders: Order[]; compac
           </span>
           <span className="order-date"><span>Expected delivery</span><strong>{formatDate(order.expectedDeliveryDate)}</strong></span>
         </Link>
-        <OrderStatusSelector orderId={order._id} currentStatus={order.status} label={`Update ${order.title} status`} />
+        <OrderStatusSelector key={`${order._id}:${order.status}`} orderId={order._id} currentStatus={order.status} label={`Update ${order.title} status`} />
         {compact && <span className="queue-number">{String(index + 1).padStart(2, "0")}</span>}
       </article>;
     })}

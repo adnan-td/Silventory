@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import Webcam from "react-webcam";
 import { Suspense } from "react";
 import { useEffect, useRef, useState, useTransition, type ChangeEvent, type KeyboardEvent } from "react";
 import type { Contact, Order } from "@/sanity/lib/silventory";
@@ -41,12 +42,16 @@ function ActiveNavigation() {
 }
 
 export function OrderStatusSelector({ orderId, currentStatus, label }: { orderId: string; currentStatus: Order["status"]; label: string }) {
+  const router = useRouter();
   const [status, setStatus] = useState<EditableOrderStatus | "">(currentStatus === "ready" ? "" : currentStatus);
+  const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
+
   function save(event: ChangeEvent<HTMLSelectElement>) {
     const nextStatus = event.currentTarget.value as EditableOrderStatus;
     const previousStatus = status;
     setStatus(nextStatus);
+    setError("");
     const data = new FormData();
     data.set("orderId", orderId);
     data.set("status", nextStatus);
@@ -56,6 +61,7 @@ export function OrderStatusSelector({ orderId, currentStatus, label }: { orderId
         try {
           const response = await fetch("/api/orders/status", { method: "POST", body: data });
           if (!response.ok) throw new Error(`Order status update failed with status ${response.status}.`);
+          router.refresh();
           return;
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error));
@@ -66,12 +72,24 @@ export function OrderStatusSelector({ orderId, currentStatus, label }: { orderId
         console.error("Could not save order status after retrying.", lastError);
       }
       setStatus(previousStatus);
+      setError("Could not save status. Please try again.");
     });
   }
-  return <select className="status-select" aria-label={label} value={status} onChange={save} disabled={pending}>
-    {currentStatus === "ready" && <option value="" disabled>Choose a status</option>}
-    {statuses.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-  </select>;
+  return <>
+    <select
+      className="status-select"
+      aria-label={label}
+      aria-invalid={Boolean(error)}
+      title={error || label}
+      value={status}
+      onChange={save}
+      disabled={pending}
+    >
+      {currentStatus === "ready" && <option value="" disabled>Choose a status</option>}
+      {statuses.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+    </select>
+    {error && <span className="sr-only" role="alert">{error}</span>}
+  </>;
 }
 
 export function ContactPicker({ contacts, name = "contactId", initialContactId = "", required = true, disabled = false, id = "contactId" }: {
@@ -170,23 +188,51 @@ export function ContactPicker({ contacts, name = "contactId", initialContactId =
 
 export function ClothPhotoPicker({ currentPhotoName }: { currentPhotoName?: string }) {
   const [fileName, setFileName] = useState("");
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraError, setCameraError] = useState("");
+  const webcamRef = useRef<Webcam>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  function openPicker(useCamera: boolean) {
-    const input = useCamera ? cameraInputRef.current : fileInputRef.current;
-    if (!input) return;
-    input.click();
+
+  function chooseFromDevice() {
+    fileInputRef.current?.click();
   }
+
+  async function capturePhoto() {
+    const image = webcamRef.current?.getScreenshot();
+    if (!image) {
+      setCameraError("The camera is not ready yet. Please wait a moment and try again.");
+      return;
+    }
+
+    try {
+      const response = await fetch(image);
+      const blob = await response.blob();
+      const file = new File([blob], `cloth-photo-${Date.now()}.jpg`, {
+        type: "image/jpeg",
+      });
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      if (cameraInputRef.current) cameraInputRef.current.files = transfer.files;
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      setFileName(file.name);
+      setCameraOpen(false);
+      setCameraError("");
+    } catch (error) {
+      console.error("Could not prepare the captured cloth photo.", error);
+      setCameraError("Could not use that photo. Please try again or choose a photo from your device.");
+    }
+  }
+
   return <div className="photo-picker">
     <input
       ref={cameraInputRef}
       className="photo-file-input"
-      aria-label="Take cloth photo"
+      tabIndex={-1}
+      aria-hidden="true"
       name="cameraPhoto"
       type="file"
-      accept="image/*"
-      onChange={(event) => setFileName(event.target.files?.[0]?.name || "")}
-      capture="environment"
+      accept="image/jpeg"
     />
     <input
       ref={fileInputRef}
@@ -195,9 +241,44 @@ export function ClothPhotoPicker({ currentPhotoName }: { currentPhotoName?: stri
       name="clothPhoto"
       type="file"
       accept="image/*"
-      onChange={(event) => setFileName(event.target.files?.[0]?.name || "")}
+      onChange={(event) => {
+        const file = event.target.files?.[0];
+        if (file) {
+          if (cameraInputRef.current) cameraInputRef.current.value = "";
+          setFileName(file.name);
+        }
+      }}
     />
-    <div className="photo-picker-preview"><span className="photo-upload-icon">▧</span><span><strong>{fileName || currentPhotoName || "No photo selected"}</strong><small>JPG, PNG or HEIC · clear, well-lit photos work best</small></span></div>
-    <div className="photo-picker-actions"><button type="button" className="button button-outline" onClick={() => openPicker(true)}>Take photo</button><button type="button" className="button button-outline" onClick={() => openPicker(false)}>Choose from device</button></div>
+    <div className="photo-picker-preview"><span className="photo-upload-icon">▧</span><span><strong>{fileName || currentPhotoName || "No photo selected"}</strong><small>JPG, PNG or HEIC (converted to JPG on upload) · clear, well-lit photos work best</small></span></div>
+    <div className="photo-picker-actions">
+      <button type="button" className="button button-outline" onClick={() => { setCameraError(""); setCameraOpen((open) => !open); }}>
+        {cameraOpen ? "Close camera" : "Take photo"}
+      </button>
+      <button type="button" className="button button-outline" onClick={chooseFromDevice}>Choose from device</button>
+    </div>
+    {cameraOpen && <div className="photo-camera">
+      <Webcam
+        ref={webcamRef}
+        audio={false}
+        screenshotFormat="image/jpeg"
+        screenshotQuality={0.9}
+        videoConstraints={{
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        }}
+        playsInline
+        muted
+        autoPlay
+        onUserMediaError={(error) => {
+          console.error("Could not access the device camera.", error);
+          setCameraError("Could not access the camera. Allow camera access in your browser settings, or choose a photo from your device.");
+        }}
+      />
+      {cameraError && <p className="photo-camera-error" role="alert">{cameraError}</p>}
+      <button type="button" className="button button-primary" onClick={capturePhoto} disabled={Boolean(cameraError)}>
+        Capture photo
+      </button>
+    </div>}
   </div>;
 }

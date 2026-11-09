@@ -1,7 +1,48 @@
 "use client";
 
 import { useState, type FormEvent, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+
+class HeicConversionError extends Error {
+  constructor() {
+    super("Could not convert this HEIC photo. Please choose a JPG or PNG instead.");
+    this.name = "HeicConversionError";
+  }
+}
+
+async function convertHeicPhotos(formData: FormData) {
+  for (const field of ["cameraPhoto", "clothPhoto"]) {
+    const file = formData.get(field);
+    if (
+      !(file instanceof File) ||
+      file.size === 0 ||
+      (!/^image\/hei[cf](?:$|[-;+])/i.test(file.type) &&
+        !/\.(?:heic|heif|heics|heifs)$/i.test(file.name))
+    ) {
+      continue;
+    }
+
+    let converted: Blob | Blob[];
+    try {
+      const { default: heic2any } = await import("heic2any");
+      converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
+    } catch (cause) {
+      console.error("Could not convert selected HEIC cloth photo.", cause);
+      throw new HeicConversionError();
+    }
+
+    const jpeg = Array.isArray(converted) ? converted[0] : converted;
+    if (!jpeg) throw new HeicConversionError();
+
+    const jpegName = file.name.replace(/\.(?:heic|heif|heics|heifs)$/i, ".jpg");
+    formData.set(
+      field,
+      new File([jpeg], jpegName === file.name ? `${file.name}.jpg` : jpegName, {
+        type: "image/jpeg",
+        lastModified: file.lastModified,
+      }),
+    );
+  }
+}
 
 export function OrderSubmitForm({
   action,
@@ -18,7 +59,6 @@ export function OrderSubmitForm({
   submitLabel: string;
   children: ReactNode;
 }) {
-  const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
@@ -31,17 +71,20 @@ export function OrderSubmitForm({
     setError("");
 
     try {
+      await convertHeicPhotos(formData);
       const response = await fetch(action, { method: "POST", body: formData });
       if (!response.ok) {
         throw new Error(`Saving failed (HTTP ${response.status}). Please try again.`);
       }
 
-      router.push(destination);
+      window.location.assign(destination);
     } catch (cause) {
       setError(
-        cause instanceof Error && cause.message.startsWith("Saving failed")
+        cause instanceof HeicConversionError
           ? cause.message
-          : "Could not save the order. Check your connection and try again.",
+          : cause instanceof Error && cause.message.startsWith("Saving failed")
+            ? cause.message
+            : "Could not save the order. Check your connection and try again.",
       );
       setPending(false);
     }

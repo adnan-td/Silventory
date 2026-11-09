@@ -5,7 +5,7 @@ Silventory is an inventory and order-tracking workspace for a tailoring shop. It
 ## Features
 
 - Dashboard with recent order activity, pending work hours, and a first-come-first-served order queue.
-- Stitching requests with customer details, cloth photo, request and delivery dates, comments, and an estimate of 1–24 hours.
+- Stitching requests with customer details, camera or gallery cloth photos, request and delivery dates, comments, and an estimate of 1–24 hours. HEIC/HEIF photos are converted to JPEG in the browser before upload.
 - Contact book with one-time VCF or CSV import and duplicate detection.
 - Order status tracking and delivered-order timestamps.
 - Sanity Studio at `/studio` for maintenance.
